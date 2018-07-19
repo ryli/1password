@@ -174,6 +174,11 @@ code {
     word-break: break-all;
     line-height: 1.4em;
 }
+#notice {
+    display: none;
+    color: #666;
+    text-align: center;
+}
 </style>
 </head>
 <body>
@@ -218,7 +223,15 @@ code {
             <button onclick="gen()">Generate</button>
         </td>
     </tr>
+    <tr>
+        <td colspan="2">
+            <span id="notice">Success copy!</span>
+        </td>
+    </tr>
 </table>
+
+<input id="copy-input" readonly hidden />
+
 </div>
 <script type="text/javascript">
 /*! jshashes - New BSD License - https://github.com/h2non/jshashes */
@@ -233,6 +246,8 @@ code {
     var length = $('length');
     var hmac = $('hmac');
     var content = $('content');
+    var result = $('result');
+    var copyInput = $('copy-input');
     function getLen(){
         return Math.max(parseInt(length.value) || 14, 4);
     }
@@ -246,10 +261,24 @@ code {
                 var key = (hmac.value || '').trim();
                 if(key){
                     var pwd = encrpty.b64_hmac(key, str);
-                    $('result').innerHTML = pwd.replace(/\W/g, '-').substr(1, len);
+                    pwd = pwd.replace(/\W/g, '-').substr(1, len);
+                    result.innerHTML = pwd
                     localStorage.setItem('_1pwd_type_', t);
                     localStorage.setItem('_1pwd_content_', str);
                     localStorage.setItem('_1pwd_leng_', len);
+
+                    copyInput.hidden = false;
+                    copyInput.setAttribute('value', pwd);
+                    copyInput.select()
+                    copyInput.setSelectionRange(0, pwd.length);
+                    if (document.execCommand && document.execCommand('copy')) {
+                        var notice = $('notice');
+                        notice.style.display = 'block';
+                        setTimeout(function() {
+                            notice.style.display = 'none';
+                        }, 3000);
+                    }
+                    copyInput.hidden = true;
                 } else {
                     alert('missing 1password');
                     hmac.focus();
